@@ -1,1 +1,2 @@
-# Project-Pandanda-Client
+# Pandanda.org Official Client
+
