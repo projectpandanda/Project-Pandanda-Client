@@ -215,15 +215,15 @@ function createWindow() {
       return;
     }
 
-    const bounds = mainWindow.getContentBounds();
+    const [width, height] = mainWindow.getContentSize();
 
     const isFullscreen = mainWindow.isFullScreen();
 
     view.setBounds({
       x: 0,
       y: isFullscreen ? 0 : TITLEBAR_HEIGHT,
-      width: bounds.width,
-      height: isFullscreen ? bounds.height : bounds.height - TITLEBAR_HEIGHT,
+      width: width,
+      height: isFullscreen ? height : height - TITLEBAR_HEIGHT,
     });
   };
   view.webContents.once("did-finish-load", () => {
@@ -242,6 +242,8 @@ function createWindow() {
   mainWindow.on("unmaximize", resizeView);
   mainWindow.on("enter-full-screen", resizeView);
   mainWindow.on("leave-full-screen", resizeView);
+  mainWindow.on("enter-html-full-screen", resizeView);
+  mainWindow.on("leave-html-full-screen", resizeView);
 }
 
 app.on("ready", () => {
