@@ -219,12 +219,29 @@ function createWindow() {
 
     const isFullscreen = mainWindow.isFullScreen();
 
-    view.setBounds({
-      x: 0,
-      y: isFullscreen ? 0 : TITLEBAR_HEIGHT,
-      width: width,
-      height: isFullscreen ? height : height - TITLEBAR_HEIGHT,
-    });
+    if (isFullscreen) {
+      mainWindow.webContents.executeJavaScript(`
+      document.getElementById('titlebar').style.display = 'none';
+    `);
+
+      view.setBounds({
+        x: 0,
+        y: 0,
+        width: width,
+        height: height,
+      });
+    } else {
+      mainWindow.webContents.executeJavaScript(`
+      document.getElementById('titlebar').style.display = 'flex';
+    `);
+
+      view.setBounds({
+        x: 0,
+        y: TITLEBAR_HEIGHT,
+        width: width,
+        height: height - TITLEBAR_HEIGHT,
+      });
+    }
   };
   view.webContents.once("did-finish-load", () => {
     mainWindow.show();
