@@ -1,7 +1,7 @@
 {
   "name": "pdnorgclient",
   "productName": "Pandanda.org",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "Pandanda.org Client",
   "main": "src/main.js",
   "scripts": {

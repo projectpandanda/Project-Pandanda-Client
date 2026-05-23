@@ -82,6 +82,7 @@ rpc.on("ready", () => {
 rpc.login({ clientId }).catch(() => {});
 
 let mainWindow;
+let view;
 const TITLEBAR_HEIGHT = 32;
 
 ipcMain.on("window-minimize", () => {
@@ -140,12 +141,20 @@ function createWindow() {
       mainWindow.setBrowserView(null);
     }
 
+    if (view) {
+      try {
+        view.webContents.destroy();
+      } catch {}
+
+      view = null;
+    }
+
     mainWindow = null;
   });
 
   mainWindow.loadFile(path.join(__dirname, "titlebar.html"));
 
-  const view = new BrowserView({
+  view = new BrowserView({
     webPreferences: {
       plugins: true,
       devTools: false,
@@ -259,9 +268,13 @@ function createWindow() {
   mainWindow.on("unmaximize", resizeView);
   mainWindow.on("enter-full-screen", resizeView);
   mainWindow.on("leave-full-screen", resizeView);
-  mainWindow.on("enter-html-full-screen", resizeView);
-  mainWindow.on("leave-html-full-screen", resizeView);
+  view.webContents.on("enter-html-full-screen", resizeView);
+  view.webContents.on("leave-html-full-screen", resizeView);
 }
+
+app.on("activate", () => {
+  if (!mainWindow) createWindow();
+});
 
 app.on("ready", () => {
   session.defaultSession.setPermissionRequestHandler(
@@ -275,28 +288,21 @@ app.on("ready", () => {
   createWindow();
 });
 
-app.on("activate", () => {
-  if (!mainWindow) createWindow();
-});
-
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
-  }
-});
-
-app.on("before-quit", async (event) => {
-  event.preventDefault();
-
+app.on("before-quit", () => {
   if (rpcInterval) {
     clearInterval(rpcInterval);
     rpcInterval = null;
   }
 
   try {
-    await rpc.clearActivity();
-    await rpc.destroy();
+    rpc.clearActivity();
+    rpc.destroy();
   } catch {}
+});
 
-  process.exit(0);
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
+    app.quit();
+    process.exit(0);
+  }
 });
